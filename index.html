@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1F4E79">
+<meta name="description" content="Manual de Digitación GES 2024 — Red Asistencial SSVSA">
+<link rel="manifest" href="manifest.json">
+<title>Manual GES 2024</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--azul-osc:#1F4E79;--azul-med:#2E75B6;--azul-clar:#DEEAF1;--verde-osc:#1E5C3A;--verde-med:#2E8B57;--verde-clar:#E2EFDA;--naranja:#C55A11;--naranja-c:#FCE4D6;--gris:#F2F7FC;--blanco:#ffffff;--texto:#1a1a2e;--texto-sec:#5a5a7a;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:var(--texto);min-height:100vh;}
+.header{background:var(--azul-osc);color:white;padding:16px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.3);}
+.header-icon{width:40px;height:40px;background:var(--azul-med);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;}
+.header h1{font-size:18px;font-weight:600;}
+.header p{font-size:11px;opacity:.75;}
+.main{max-width:1200px;margin:0 auto;padding:20px 16px;}
+.card{background:white;border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.07);}
+.card-title{font-size:13px;font-weight:700;color:var(--azul-osc);text-transform:uppercase;letter-spacing:.05em;margin-bottom:14px;}
+
+/* TABS */
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--azul-clar);margin-bottom:16px;flex-wrap:wrap;}
+.tab{padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;color:var(--texto-sec);border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap;}
+.tab:hover{color:var(--azul-med);}
+.tab.active{color:var(--azul-osc);border-bottom-color:var(--azul-osc);}
+.tab.verde.active{color:var(--verde-med);border-bottom-color:var(--verde-med);}
+.tab.naranja.active{color:var(--naranja);border-bottom-color:var(--naranja);}
+.tab.verde-osc.active{color:var(--verde-osc);border-bottom-color:var(--verde-osc);}
+
+/* ESTADO ARCHIVO */
+.upload-zone{border:2px dashed var(--azul-med);border-radius:12px;padding:20px;text-align:center;transition:all .2s;background:var(--azul-clar);}
+.upload-zone.loaded{border-color:var(--verde-med);background:var(--verde-clar);}
+.upload-zone.error{border-color:#e53e3e;background:#FFF5F5;cursor:pointer;}
+.upload-zone.error:hover{background:#FED7D7;}
+.upload-icon{font-size:28px;margin-bottom:6px;}
+.upload-txt{font-size:13px;font-weight:600;color:var(--azul-osc);}
+.upload-hint{font-size:11px;color:var(--texto-sec);margin-top:3px;}
+#file-input{display:none;}
+.btn-actualizar{margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;}
+.stat-card{border-radius:10px;padding:10px;text-align:center;}
+.stat-card.azul{background:var(--azul-clar);}
+.stat-card.verde{background:var(--verde-clar);}
+.stat-card.naranja{background:var(--naranja-c);}
+.stat-val{font-size:20px;font-weight:700;}
+.stat-val.azul{color:var(--azul-osc);}
+.stat-val.verde{color:var(--verde-osc);}
+.stat-val.naranja{color:var(--naranja);}
+.stat-lbl{font-size:10px;color:var(--texto-sec);margin-top:2px;}
+
+/* FILTROS */
+.filtros-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;}
+.filtro-group label{font-size:12px;font-weight:600;color:var(--azul-osc);display:block;margin-bottom:4px;}
+.filtro-group input,.filtro-group select{width:100%;padding:8px 12px;border:1.5px solid #d0d8e8;border-radius:8px;font-size:13px;background:white;color:var(--texto);outline:none;}
+.filtro-group input:focus,.filtro-group select:focus{border-color:var(--azul-med);}
+
+/* BOTONES */
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+.btn{padding:9px 18px;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s;}
+.btn-primary{background:var(--azul-osc);color:white;}
+.btn-primary:hover{background:var(--azul-med);}
+.btn-success{background:var(--verde-med);color:white;}
+.btn-success:hover{background:var(--verde-osc);}
+.btn-outline{background:white;color:var(--azul-osc);border:1.5px solid var(--azul-med);}
+.btn-outline:hover{background:var(--azul-clar);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* RESULTADOS */
+.result-info{font-size:13px;color:var(--texto-sec);margin-bottom:12px;}
+.result-info strong{color:var(--azul-osc);}
+
+/* BLOQUE PS */
+.ps-block{margin-bottom:20px;border-radius:10px;overflow:hidden;border:1px solid #dde3ed;}
+.ps-titulo{padding:10px 16px;font-weight:700;font-size:13px;color:white;display:flex;align-items:center;gap:10px;}
+.ps-titulo.azul{background:var(--azul-osc);}
+.ps-titulo.verde{background:var(--verde-med);}
+.ps-titulo.naranja{background:var(--naranja);}
+.ps-titulo.verde-osc{background:var(--verde-osc);}
+.ps-num{background:rgba(255,255,255,0.25);padding:2px 8px;border-radius:99px;font-size:11px;}
+.tabla-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;min-width:500px;}
+thead th{padding:9px 12px;text-align:left;font-size:11px;font-weight:600;white-space:nowrap;color:white;}
+thead th.azul{background:var(--azul-med);}
+thead th.verde{background:var(--verde-osc);}
+thead th.naranja{background:#9C4209;}
+thead th.verde-osc{background:#163D27;}
+tbody tr:nth-child(even){background:var(--gris);}
+tbody tr:hover{background:var(--azul-clar);}
+td{padding:8px 12px;border-bottom:1px solid #eaeff5;vertical-align:top;line-height:1.4;font-size:12px;}
+
+/* GLOSARIO */
+.glosario-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.glosario-tabla{border-radius:10px;overflow:hidden;border:1px solid #dde3ed;}
+.glosario-hdr{padding:10px 14px;font-weight:700;font-size:12px;color:white;}
+.glosario-hdr.azul{background:var(--azul-osc);}
+.glosario-hdr.verde{background:var(--verde-osc);}
+
+/* EMPTY */
+.empty{text-align:center;padding:40px 20px;color:var(--texto-sec);}
+.empty-icon{font-size:40px;margin-bottom:10px;}
+.spinner{width:28px;height:28px;border:3px solid var(--azul-clar);border-top-color:var(--azul-med);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 8px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a2e;color:white;padding:12px 24px;border-radius:10px;font-size:13px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
+@media(max-width:600px){
+  .header h1{font-size:15px;}
+  .main{padding:12px 10px;}
+  .glosario-grid{grid-template-columns:1fr;}
+  .tab{padding:8px 12px;font-size:12px;}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">📋</div>
+  <div>
+    <h1>Manual de Digitación GES 2024</h1>
+    <p>Red Asistencial — SSVSA</p>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ESTADO ARCHIVO -->
+  <div class="card">
+    <div class="card-title">📂 Estado del archivo</div>
+    <div class="upload-zone loaded" id="upload-zone">
+      <div class="upload-icon" id="upload-icon"><div class="spinner"></div></div>
+      <div class="upload-txt" id="upload-txt">Cargando datos automáticamente...</div>
+      <div class="upload-hint" id="upload-hint">Las reglas se cargan desde el servidor</div>
+    </div>
+    <div class="btn-actualizar">
+      <button class="btn btn-outline" onclick="cargarDesdeServidor()" style="font-size:12px;padding:7px 14px">🔄 Actualizar</button>
+      <span style="font-size:11px;color:var(--texto-sec)" id="ultima-act"></span>
+    </div>
+    <input type="file" id="file-input" accept=".xlsx,.xls" onchange="loadFile(this.files[0])">
+  </div>
+
+  <!-- STATS -->
+  <div class="card" id="stats-card" style="display:none">
+    <div class="card-title">📊 Resumen</div>
+    <div class="stats-grid">
+      <div class="stat-card azul"><div class="stat-val azul" id="st-glosario">0</div><div class="stat-lbl">Abreviaciones</div></div>
+      <div class="stat-card verde"><div class="stat-val verde" id="st-aps">0</div><div class="stat-lbl">PS Digitación APS</div></div>
+      <div class="stat-card naranja"><div class="stat-val naranja" id="st-aps2">0</div><div class="stat-lbl">PS APS c/Derivación</div></div>
+      <div class="stat-card azul"><div class="stat-val azul" id="st-der">0</div><div class="stat-lbl">PS Derivaciones</div></div>
+      <div class="stat-card verde"><div class="stat-val verde" id="st-hoja1">0</div><div class="stat-lbl">PS Complementarios</div></div>
+    </div>
+  </div>
+
+  <!-- TABS + CONTENIDO -->
+  <div class="card" id="contenido-card" style="display:none">
+    <div class="tabs">
+      <div class="tab active azul" onclick="cambiarTab('glosario',this)">📋 Glosario</div>
+      <div class="tab verde" onclick="cambiarTab('aps',this)">🏥 APS Directa</div>
+      <div class="tab naranja" onclick="cambiarTab('aps2',this)">🔄 APS c/Derivación</div>
+      <div class="tab" onclick="cambiarTab('derivaciones',this)">➡️ Derivaciones</div>
+      <div class="tab verde-osc" onclick="cambiarTab('hoja1',this)">📄 Complementario</div>
+    </div>
+
+    <!-- FILTROS (ocultos en glosario) -->
+    <div id="filtros-section">
+      <div class="filtros-grid">
+        <div class="filtro-group">
+          <label>Buscar (N° PS o nombre)</label>
+          <input type="text" id="f-buscar" placeholder="Ej: 37 o cáncer..." oninput="filtrar()">
+        </div>
+        <div class="filtro-group">
+          <label>Establecimiento / Destino</label>
+          <select id="f-estab" onchange="filtrar()"><option value="">Todos</option></select>
+        </div>
+        <div class="filtro-group">
+          <label>Especialidad / Unidad</label>
+          <select id="f-espec" onchange="filtrar()"><option value="">Todas</option></select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="limpiarFiltros()">↺ Limpiar</button>
+        <button class="btn btn-primary" onclick="filtrar()">🔍 Buscar</button>
+        <button class="btn btn-success" onclick="exportar()" id="btn-export" disabled>📥 Exportar Excel</button>
+      </div>
+    </div>
+
+    <div class="result-info" id="result-info" style="margin-top:14px"></div>
+    <div id="tabla-container"></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let DATOS = { glosario:[], aps:[], aps2:[], derivaciones:[], hoja1:[] };
+let TAB_ACTUAL = 'glosario';
+let FILTRADA = [];
+
+window.addEventListener('load', cargarDesdeServidor);
+
+async function cargarDesdeServidor() {
+  setEstado('cargando');
+  try {
+    const resp = await fetch('manual.xlsx?v=' + Date.now());
+    if (!resp.ok) throw new Error('no encontrado');
+    const buf = await resp.arrayBuffer();
+    procesarExcel(buf, 'Servidor');
+    document.getElementById('ultima-act').textContent = 'Actualizado: ' + new Date().toLocaleString('es-CL');
+  } catch(e) {
+    setEstado('error');
+  }
+}
+
+function setEstado(estado) {
+  const zona  = document.getElementById('upload-zone');
+  const icono = document.getElementById('upload-icon');
+  const txt   = document.getElementById('upload-txt');
+  const hint  = document.getElementById('upload-hint');
+  if (estado === 'cargando') {
+    zona.className='upload-zone loaded'; zona.onclick=null;
+    icono.innerHTML='<div class="spinner"></div>';
+    txt.textContent='Cargando datos automáticamente...';
+    hint.textContent='Las reglas se cargan desde el servidor';
+  } else if (estado === 'error') {
+    zona.className='upload-zone error';
+    zona.onclick=()=>document.getElementById('file-input').click();
+    icono.innerHTML='⚠️';
+    txt.textContent='No se pudo cargar desde el servidor';
+    hint.textContent='Toca aquí para cargar el archivo manualmente';
+  } else if (estado === 'ok') {
+    zona.className='upload-zone loaded'; zona.onclick=null;
+    icono.innerHTML='✅';
+  }
+}
+
+function loadFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => procesarExcel(e.target.result, file.name);
+  reader.readAsArrayBuffer(file);
+}
+
+function limpiar(v) { return v===null||v===undefined||String(v).trim()==='nan'?'':String(v).trim(); }
+
+function procesarExcel(buffer, nombre) {
+  try {
+    const wb  = XLSX.read(buffer, {type:'array'});
+
+    // Leer cada hoja
+    function leerHoja(nombre_hoja) {
+      if (!wb.SheetNames.includes(nombre_hoja)) return [];
+      const ws  = wb.Sheets[nombre_hoja];
+      const raw = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+      if (raw.length < 2) return [];
+      const hdrs = raw[0].map(h => limpiar(h));
+      const rows = [];
+      let lastPS = '', lastNombre = '';
+      for (let i = 1; i < raw.length; i++) {
+        const r = raw[i];
+        const obj = {};
+        hdrs.forEach((h,j) => { obj[h] = limpiar(r[j]); });
+        // Rellenar solo N° PS y Nombre PS
+        if (obj['N° PS']) lastPS = obj['N° PS'].replace('.0','');
+        else obj['N° PS'] = lastPS;
+        if (obj['Nombre PS']) lastNombre = obj['Nombre PS'];
+        else obj['Nombre PS'] = lastNombre;
+        obj['N° PS'] = obj['N° PS'].replace('.0','');
+        if (obj['N° PS']) rows.push(obj);
+      }
+      return rows;
+    }
+
+    // Glosario especial
+    const ws_glos = wb.Sheets['Glosario'];
+    const raw_glos = XLSX.utils.sheet_to_json(ws_glos, {header:1, defval:''});
+    const glosario = [];
+    for (let i=1; i<raw_glos.length; i++) {
+      const r = raw_glos[i];
+      if (limpiar(r[0])||limpiar(r[3])) {
+        glosario.push({
+          nombre_real: limpiar(r[0]), abrev: limpiar(r[1]),
+          codigo: limpiar(r[3]), prestacion: limpiar(r[4])
+        });
+      }
+    }
+
+    DATOS.glosario     = glosario;
+    DATOS.aps          = leerHoja('APS');
+    DATOS.aps2         = leerHoja('APS 2');
+    DATOS.derivaciones = leerHoja('Derivaciones');
+    DATOS.hoja1        = leerHoja('Hoja1');
+
+    // Stats
+    const psUnicos = d => new Set(d.map(r=>r['N° PS'])).size;
+    document.getElementById('st-glosario').textContent  = glosario.filter(g=>g.nombre_real).length;
+    document.getElementById('st-aps').textContent       = psUnicos(DATOS.aps);
+    document.getElementById('st-aps2').textContent      = psUnicos(DATOS.aps2);
+    document.getElementById('st-der').textContent       = psUnicos(DATOS.derivaciones);
+    document.getElementById('st-hoja1').textContent     = psUnicos(DATOS.hoja1);
+
+    setEstado('ok');
+    document.getElementById('upload-txt').textContent  = `Manual GES 2024 cargado — ${nombre}`;
+    document.getElementById('upload-hint').textContent = 'Datos listos para consultar';
+    document.getElementById('stats-card').style.display   = 'block';
+    document.getElementById('contenido-card').style.display = 'block';
+
+    cambiarTab('glosario', document.querySelector('.tab'));
+    showToast('✅ Manual GES cargado correctamente');
+  } catch(err) {
+    showToast('Error: ' + err.message);
+    setEstado('error');
+  }
+}
+
+function cambiarTab(tab, el) {
+  TAB_ACTUAL = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+
+  const filtros = document.getElementById('filtros-section');
+  filtros.style.display = tab === 'glosario' ? 'none' : 'block';
+  document.getElementById('result-info').textContent = '';
+
+  if (tab === 'glosario') {
+    renderGlosario();
+  } else {
+    poblarSelects();
+    filtrar();
+  }
+}
+
+function getDatos() { return DATOS[TAB_ACTUAL] || []; }
+
+function getColor() {
+  return {aps:'verde', aps2:'naranja', derivaciones:'azul', hoja1:'verde-osc'}[TAB_ACTUAL] || 'azul';
+}
+
+function poblarSelects() {
+  const datos = getDatos();
+  const col_estab = Object.keys(datos[0]||{}).find(k=>k.toLowerCase().includes('estab')||k.toLowerCase().includes('establecimiento')) || '';
+  const col_espec = Object.keys(datos[0]||{}).find(k=>k.toLowerCase().includes('espec')||k.toLowerCase().includes('especialidad')) || '';
+
+  const estabs = [...new Set(datos.map(d=>d[col_estab]||'').filter(Boolean))].sort();
+  const especs = [...new Set(datos.map(d=>d[col_espec]||'').filter(Boolean))].sort();
+
+  poblarSelect('f-estab', estabs);
+  poblarSelect('f-espec', especs);
+}
+
+function poblarSelect(id, opciones) {
+  const sel = document.getElementById(id);
+  const val = sel.value;
+  sel.innerHTML = '<option value="">Todos</option>';
+  opciones.forEach(o => {
+    const opt = document.createElement('option');
+    opt.value = o; opt.textContent = o;
+    sel.appendChild(opt);
+  });
+  if (val) sel.value = val;
+}
+
+function filtrar() {
+  const q      = document.getElementById('f-buscar').value.trim().toLowerCase();
+  const estab  = document.getElementById('f-estab').value;
+  const espec  = document.getElementById('f-espec').value;
+  const datos  = getDatos();
+
+  FILTRADA = datos.filter(d => {
+    const texto = Object.values(d).join(' ').toLowerCase();
+    const matchQ     = !q     || texto.includes(q);
+    const matchEstab = !estab || Object.values(d).some(v=>v===estab);
+    const matchEspec = !espec || Object.values(d).some(v=>v===espec);
+    return matchQ && matchEstab && matchEspec;
+  });
+
+  renderTabla();
+  document.getElementById('btn-export').disabled = !FILTRADA.length;
+}
+
+function limpiarFiltros() {
+  document.getElementById('f-buscar').value = '';
+  document.getElementById('f-estab').value  = '';
+  document.getElementById('f-espec').value  = '';
+  filtrar();
+}
+
+function renderGlosario() {
+  const cont = document.getElementById('tabla-container');
+  const abrevs = DATOS.glosario.filter(g=>g.nombre_real);
+  const codigos = DATOS.glosario.filter(g=>g.codigo);
+
+  cont.innerHTML = `
+    <div class="glosario-grid">
+      <div class="glosario-tabla">
+        <div class="glosario-hdr azul">📌 Abreviaciones (${abrevs.length})</div>
+        <div class="tabla-wrap"><table>
+          <thead><tr>
+            <th class="azul">Nombre Completo</th>
+            <th class="azul" style="width:100px">Abreviación</th>
+          </tr></thead>
+          <tbody>
+            ${abrevs.map((g,i)=>`<tr>
+              <td>${g.nombre_real}</td>
+              <td style="text-align:center;font-weight:600;color:var(--azul-osc)">${g.abrev}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table></div>
+      </div>
+      <div class="glosario-tabla">
+        <div class="glosario-hdr verde">🏷️ Códigos de Prestaciones (${codigos.length})</div>
+        <div class="tabla-wrap"><table>
+          <thead><tr>
+            <th class="verde" style="width:90px">Código</th>
+            <th class="verde">Nombre de Prestación</th>
+          </tr></thead>
+          <tbody>
+            ${codigos.map((g,i)=>`<tr>
+              <td style="text-align:center;font-weight:600;color:var(--verde-osc)">${g.codigo}</td>
+              <td>${g.prestacion}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table></div>
+      </div>
+    </div>`;
+}
+
+function renderTabla() {
+  const cont  = document.getElementById('tabla-container');
+  const info  = document.getElementById('result-info');
+  const color = getColor();
+
+  if (!FILTRADA.length) {
+    info.innerHTML = '';
+    cont.innerHTML = '<div class="empty"><div class="empty-icon">🔍</div><div>Sin resultados con los filtros aplicados</div></div>';
+    return;
+  }
+
+  const psUnicos = [...new Set(FILTRADA.map(d=>d['N° PS']))];
+  info.innerHTML = `Mostrando <strong>${FILTRADA.length}</strong> registro${FILTRADA.length!==1?'s':''} de <strong>${psUnicos.length}</strong> problema${psUnicos.length!==1?'s':''} de salud`;
+
+  const cols = Object.keys(FILTRADA[0] || {});
+
+  let html = '';
+  psUnicos.forEach(ps => {
+    const filas = FILTRADA.filter(d => d['N° PS'] === ps);
+    const nombre = filas[0]['Nombre PS'] || '';
+    html += `<div class="ps-block">
+      <div class="ps-titulo ${color}">
+        <span class="ps-num">N° ${ps}</span>
+        ${nombre}
+      </div>
+      <div class="tabla-wrap"><table>
+        <thead><tr>${cols.filter(c=>c!=='N° PS'&&c!=='Nombre PS').map(c=>`<th class="${color}">${c}</th>`).join('')}</tr></thead>
+        <tbody>
+          ${filas.map((d,i)=>`<tr>${cols.filter(c=>c!=='N° PS'&&c!=='Nombre PS').map(c=>`<td>${d[c]||''}</td>`).join('')}</tr>`).join('')}
+        </tbody>
+      </table></div>
+    </div>`;
+  });
+  cont.innerHTML = html;
+}
+
+function exportar() {
+  if (!FILTRADA.length) return;
+  const wb   = XLSX.utils.book_new();
+  const cols = Object.keys(FILTRADA[0]||{});
+  const rows = [cols, ...FILTRADA.map(d=>cols.map(c=>d[c]||''))];
+  const ws   = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = cols.map(()=>({wch:20}));
+  XLSX.utils.book_append_sheet(wb, ws, TAB_ACTUAL.toUpperCase());
+  XLSX.writeFile(wb, `Manual_GES_${TAB_ACTUAL}.xlsx`);
+  showToast('✅ Excel exportado');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>

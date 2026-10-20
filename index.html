@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#1F4E79">
 <meta name="description" content="Manual de Digitación GES 2024 — Red Asistencial SSVSA">
@@ -11,7 +11,8 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Manual GES 2024</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" integrity="sha512-r22gChDnGvBylk90+2e/ycr3RVrDi8DIOkIGNhJlKfuyQM4tIRAI062MaV8sfjQKYVGjOBaZBOA87z+IhZE9DA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<!-- SheetJS 0.20.3 guardado en el repo (ya no depende de cdnjs). Licencia: vendor/xlsx-LICENSE.txt -->
+<script src="vendor/xlsx-0.20.3.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT"></script>
 <style>
 :root{--azul-osc:#1F4E79;--azul-med:#2E75B6;--azul-clar:#DEEAF1;--verde-osc:#1E5C3A;--verde-med:#2E8B57;--verde-clar:#E2EFDA;--naranja:#C55A11;--naranja-c:#FCE4D6;--gris:#F2F7FC;--blanco:#ffffff;--texto:#1a1a2e;--texto-sec:#5a5a7a;}
 *{box-sizing:border-box;margin:0;padding:0;}

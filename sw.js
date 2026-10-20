@@ -1,6 +1,6 @@
-const CACHE = 'manual-ges-v2';
+const CACHE = 'manual-ges-v3';
 // Rutas relativas: el sitio vive en /manual-ges/ (GitHub Pages), no en la raíz del dominio
-const BASICOS = ['./', './index.html', './manifest.json', './manual.xlsx'];
+const BASICOS = ['./', './index.html', './manifest.json', './manual.xlsx', './vendor/xlsx-0.20.3.full.min.js'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(BASICOS)));
   self.skipWaiting();

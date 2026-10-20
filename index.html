@@ -3,11 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#1F4E79">
 <meta name="description" content="Manual de Digitación GES 2024 — Red Asistencial SSVSA">
 <link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Manual GES 2024</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- SheetJS 0.20.3 guardado en el repo (ya no depende de cdnjs). Licencia: vendor/xlsx-LICENSE.txt -->
+<script src="vendor/xlsx-0.20.3.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT"></script>
 <style>
 :root{--azul-osc:#1F4E79;--azul-med:#2E75B6;--azul-clar:#DEEAF1;--verde-osc:#1E5C3A;--verde-med:#2E8B57;--verde-clar:#E2EFDA;--naranja:#C55A11;--naranja-c:#FCE4D6;--gris:#F2F7FC;--blanco:#ffffff;--texto:#1a1a2e;--texto-sec:#5a5a7a;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -22,8 +27,9 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:var(--text
 
 /* TABS */
 .tabs{display:flex;gap:0;border-bottom:2px solid var(--azul-clar);margin-bottom:16px;flex-wrap:wrap;}
-.tab{padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;color:var(--texto-sec);border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap;}
+.tab{background:none;border:none;font-family:inherit;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;color:var(--texto-sec);border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap;}
 .tab:hover{color:var(--azul-med);}
+.tab:focus-visible,.btn:focus-visible{outline:2px solid var(--azul-med);outline-offset:2px;}
 .tab.active{color:var(--azul-osc);border-bottom-color:var(--azul-osc);}
 .tab.verde.active{color:var(--verde-med);border-bottom-color:var(--verde-med);}
 .tab.naranja.active{color:var(--naranja);border-bottom-color:var(--naranja);}
@@ -80,7 +86,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:var(--text
 .ps-titulo.verde{background:var(--verde-med);}
 .ps-titulo.naranja{background:var(--naranja);}
 .ps-titulo.verde-osc{background:var(--verde-osc);}
-.ps-num{background:rgba(255,255,255,0.25);padding:2px 8px;border-radius:99px;font-size:11px;}
+.ps-num{background:rgba(255,255,255,0.25);padding:2px 8px;border-radius:99px;font-size:11px;white-space:nowrap;flex-shrink:0;}
 .tabla-wrap{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:12px;min-width:500px;}
 thead th{padding:9px 12px;text-align:left;font-size:11px;font-weight:600;white-space:nowrap;color:white;}
@@ -104,20 +110,35 @@ td{padding:8px 12px;border-bottom:1px solid #eaeff5;vertical-align:top;line-heig
 .empty-icon{font-size:40px;margin-bottom:10px;}
 .spinner{width:28px;height:28px;border:3px solid var(--azul-clar);border-top-color:var(--azul-med);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 8px;}
 @keyframes spin{to{transform:rotate(360deg);}}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a2e;color:white;padding:12px 24px;border-radius:10px;font-size:13px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a2e;color:white;padding:12px 24px;border-radius:10px;font-size:13px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;max-width:calc(100% - 32px);}
 .toast.show{opacity:1;}
 @media(max-width:600px){
   .header h1{font-size:15px;}
   .main{padding:12px 10px;}
   .glosario-grid{grid-template-columns:1fr;}
   .tab{padding:8px 12px;font-size:12px;}
+  .toast{white-space:normal;text-align:center;}
+  /* Glosario: solo 2 columnas, cabe sin desplazarse de lado */
+  .glosario-tabla table{min-width:0;}
+  /* Vista en tarjetas: cada fila es una tarjeta y cada columna un renglón «Título: valor» */
+  .tabla-cards{min-width:0;}
+  .tabla-cards thead{display:none;}
+  .tabla-cards,.tabla-cards tbody,.tabla-cards tr,.tabla-cards td{display:block;width:100%;}
+  .tabla-cards tbody{padding:8px;}
+  .tabla-cards tr{background:white;border:1px solid #dde3ed;border-radius:8px;padding:4px 0;margin-bottom:8px;}
+  .tabla-cards tr:last-child{margin-bottom:0;}
+  .tabla-cards tbody tr:nth-child(even),.tabla-cards tbody tr:hover{background:white;}
+  .tabla-cards td{border-bottom:1px solid #eef2f7;padding:6px 12px;font-size:13px;}
+  .tabla-cards td:last-child{border-bottom:none;}
+  .tabla-cards td:empty{display:none;}
+  .tabla-cards td[data-label]:not([data-label=""])::before{content:attr(data-label);display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--texto-sec);margin-bottom:2px;}
 }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="header-icon">📋</div>
+  <div class="header-icon" aria-hidden="true">📋</div>
   <div>
     <h1>Manual de Digitación GES 2024</h1>
     <p>Red Asistencial — SSVSA</p>
@@ -129,7 +150,7 @@ td{padding:8px 12px;border-bottom:1px solid #eaeff5;vertical-align:top;line-heig
   <!-- ESTADO ARCHIVO -->
   <div class="card">
     <div class="card-title">📂 Estado del archivo</div>
-    <div class="upload-zone loaded" id="upload-zone">
+    <div class="upload-zone loaded" id="upload-zone" aria-live="polite">
       <div class="upload-icon" id="upload-icon"><div class="spinner"></div></div>
       <div class="upload-txt" id="upload-txt">Cargando datos automáticamente...</div>
       <div class="upload-hint" id="upload-hint">Las reglas se cargan desde el servidor</div>
@@ -155,27 +176,27 @@ td{padding:8px 12px;border-bottom:1px solid #eaeff5;vertical-align:top;line-heig
 
   <!-- TABS + CONTENIDO -->
   <div class="card" id="contenido-card" style="display:none">
-    <div class="tabs">
-      <div class="tab active azul" onclick="cambiarTab('glosario',this)">📋 Glosario</div>
-      <div class="tab verde" onclick="cambiarTab('aps',this)">🏥 APS Directa</div>
-      <div class="tab naranja" onclick="cambiarTab('aps2',this)">🔄 APS c/Derivación</div>
-      <div class="tab" onclick="cambiarTab('derivaciones',this)">➡️ Derivaciones</div>
-      <div class="tab verde-osc" onclick="cambiarTab('hoja1',this)">📄 Complementario</div>
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" aria-selected="true" class="tab active azul" onclick="cambiarTab('glosario',this)">📋 Glosario</button>
+      <button type="button" role="tab" aria-selected="false" class="tab verde" onclick="cambiarTab('aps',this)">🏥 APS Directa</button>
+      <button type="button" role="tab" aria-selected="false" class="tab naranja" onclick="cambiarTab('aps2',this)">🔄 APS c/Derivación</button>
+      <button type="button" role="tab" aria-selected="false" class="tab" onclick="cambiarTab('derivaciones',this)">➡️ Derivaciones</button>
+      <button type="button" role="tab" aria-selected="false" class="tab verde-osc" onclick="cambiarTab('hoja1',this)">📄 Complementario</button>
     </div>
 
     <!-- FILTROS (ocultos en glosario) -->
     <div id="filtros-section">
       <div class="filtros-grid">
         <div class="filtro-group">
-          <label>Buscar (N° PS o nombre)</label>
-          <input type="text" id="f-buscar" placeholder="Ej: 37 o cáncer..." oninput="filtrar()">
+          <label for="f-buscar">Buscar (N° PS o nombre)</label>
+          <input type="search" id="f-buscar" placeholder="Ej: 37 o cáncer..." oninput="filtrar()">
         </div>
         <div class="filtro-group">
-          <label>Establecimiento / Destino</label>
+          <label for="f-estab">Establecimiento / Destino</label>
           <select id="f-estab" onchange="filtrar()"><option value="">Todos</option></select>
         </div>
         <div class="filtro-group">
-          <label>Especialidad / Unidad</label>
+          <label for="f-espec">Especialidad / Unidad</label>
           <select id="f-espec" onchange="filtrar()"><option value="">Todas</option></select>
         </div>
       </div>
@@ -186,13 +207,13 @@ td{padding:8px 12px;border-bottom:1px solid #eaeff5;vertical-align:top;line-heig
       </div>
     </div>
 
-    <div class="result-info" id="result-info" style="margin-top:14px"></div>
+    <div class="result-info" id="result-info" aria-live="polite" style="margin-top:14px"></div>
     <div id="tabla-container"></div>
   </div>
 
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 let DATOS = { glosario:[], aps:[], aps2:[], derivaciones:[], hoja1:[] };
@@ -244,6 +265,16 @@ function loadFile(file) {
 }
 
 function limpiar(v) { return v===null||v===undefined||String(v).trim()==='nan'?'':String(v).trim(); }
+
+// Escapa texto antes de insertarlo como HTML (evita que el contenido del Excel ejecute código)
+function esc(v) {
+  return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// Texto para comparar en la búsqueda: minúsculas y sin tildes ("cancer" encuentra "Cáncer")
+function normalizar(v) {
+  return String(v ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
 
 function procesarExcel(buffer, nombre) {
   try {
@@ -317,8 +348,8 @@ function procesarExcel(buffer, nombre) {
 
 function cambiarTab(tab, el) {
   TAB_ACTUAL = tab;
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  if (el) el.classList.add('active');
+  document.querySelectorAll('.tab').forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
+  if (el) { el.classList.add('active'); el.setAttribute('aria-selected','true'); }
 
   const filtros = document.getElementById('filtros-section');
   filtros.style.display = tab === 'glosario' ? 'none' : 'block';
@@ -363,13 +394,13 @@ function poblarSelect(id, opciones) {
 }
 
 function filtrar() {
-  const q      = document.getElementById('f-buscar').value.trim().toLowerCase();
+  const q      = normalizar(document.getElementById('f-buscar').value.trim());
   const estab  = document.getElementById('f-estab').value;
   const espec  = document.getElementById('f-espec').value;
   const datos  = getDatos();
 
   FILTRADA = datos.filter(d => {
-    const texto = Object.values(d).join(' ').toLowerCase();
+    const texto = normalizar(Object.values(d).join(' '));
     const matchQ     = !q     || texto.includes(q);
     const matchEstab = !estab || Object.values(d).some(v=>v===estab);
     const matchEspec = !espec || Object.values(d).some(v=>v===espec);
@@ -403,8 +434,8 @@ function renderGlosario() {
           </tr></thead>
           <tbody>
             ${abrevs.map((g,i)=>`<tr>
-              <td>${g.nombre_real}</td>
-              <td style="text-align:center;font-weight:600;color:var(--azul-osc)">${g.abrev}</td>
+              <td>${esc(g.nombre_real)}</td>
+              <td style="text-align:center;font-weight:600;color:var(--azul-osc)">${esc(g.abrev)}</td>
             </tr>`).join('')}
           </tbody>
         </table></div>
@@ -418,8 +449,8 @@ function renderGlosario() {
           </tr></thead>
           <tbody>
             ${codigos.map((g,i)=>`<tr>
-              <td style="text-align:center;font-weight:600;color:var(--verde-osc)">${g.codigo}</td>
-              <td>${g.prestacion}</td>
+              <td style="text-align:center;font-weight:600;color:var(--verde-osc)">${esc(g.codigo)}</td>
+              <td>${esc(g.prestacion)}</td>
             </tr>`).join('')}
           </tbody>
         </table></div>
@@ -449,13 +480,13 @@ function renderTabla() {
     const nombre = filas[0]['Nombre PS'] || '';
     html += `<div class="ps-block">
       <div class="ps-titulo ${color}">
-        <span class="ps-num">N° ${ps}</span>
-        ${nombre}
+        <span class="ps-num">N° ${esc(ps)}</span>
+        ${esc(nombre)}
       </div>
-      <div class="tabla-wrap"><table>
-        <thead><tr>${cols.filter(c=>c!=='N° PS'&&c!=='Nombre PS').map(c=>`<th class="${color}">${c}</th>`).join('')}</tr></thead>
+      <div class="tabla-wrap"><table class="tabla-cards">
+        <thead><tr>${cols.filter(c=>c!=='N° PS'&&c!=='Nombre PS').map(c=>`<th class="${color}">${esc(c)}</th>`).join('')}</tr></thead>
         <tbody>
-          ${filas.map((d,i)=>`<tr>${cols.filter(c=>c!=='N° PS'&&c!=='Nombre PS').map(c=>`<td>${d[c]||''}</td>`).join('')}</tr>`).join('')}
+          ${filas.map((d,i)=>`<tr>${cols.filter(c=>c!=='N° PS'&&c!=='Nombre PS').map(c=>`<td data-label="${esc(c)}">${esc(d[c])}</td>`).join('')}</tr>`).join('')}
         </tbody>
       </table></div>
     </div>`;

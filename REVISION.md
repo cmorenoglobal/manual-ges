@@ -21,6 +21,7 @@ Fecha: 20 de octubre de 2026 · Repositorio: `cmorenoglobal/manual-ges`
 | Accesibilidad | Pestañas como botones (usables con teclado), etiquetas asociadas a los filtros, anuncios para lectores de pantalla, aviso que no se sale de la pantalla en celular | Ver sección de mejoras |
 | Íconos | `icon-192.png`, `icon-512.png` y `apple-touch-icon.png` | El manifest los pedía y no existían |
 | `README.md` | Cómo actualizar el manual y formato exacto del Excel | Ver «Mantenimiento de los datos» |
+| Celular y búsqueda | Vista en tarjetas en pantallas angostas; búsqueda sin tildes ni mayúsculas | Ver «Usabilidad en celular» |
 
 Pruebas realizadas (Chromium, pantalla de celular 390 px, sitio servido en `/manual-ges/` como GitHub Pages): carga automática del Excel, las 5 pestañas, búsqueda, exportación a Excel (y re-lectura del archivo exportado), carga manual de un Excel, intento de XSS (queda como texto y no se ejecuta), registro del service worker, uso sin conexión, ninguna petición a sitios externos y cero errores de consola o de CSP.
 
@@ -103,10 +104,10 @@ Escala: **Alto** = conviene hacerlo ya; **Medio** = hacerlo pronto; **Bajo** = d
 
 ### Usabilidad en celular
 
-- Las tablas tienen ancho mínimo de 500 px, así que en el celular hay que desplazarse de lado. Opción: en pantallas angostas, mostrar cada fila como «tarjeta» (cada columna en un renglón: *Especialidad: …, Establecimiento: …*). Es el cambio que más mejoraría el uso en el teléfono.
+- ✅ Hecho: **vista en tarjetas.** En pantallas de hasta 600 px cada fila se muestra como una tarjeta, con cada columna en su propio renglón (título arriba, valor abajo); ya no hay que desplazarse de lado. Las celdas vacías no se muestran. En computador la tabla sigue igual.
 - El encabezado fijo más las pestañas ocupan bastante altura; se podría achicar el encabezado al hacer scroll.
 - La búsqueda filtra con cada tecla; con estos volúmenes va bien, pero el botón «🔍 Buscar» sobra (se puede quitar o dejar solo como ayuda visual).
-- Buscar «cancer» (sin tilde) no encuentra «cáncer». Se puede normalizar el texto quitando tildes antes de comparar (`texto.normalize('NFD').replace(/[̀-ͯ]/g,'')`).
+- ✅ Hecho: **búsqueda sin tildes ni mayúsculas.** «cancer» encuentra «Cáncer» y «oftalmologia» encuentra «Oftalmología».
 
 ### Accesibilidad
 
@@ -144,5 +145,5 @@ Escala: **Alto** = conviene hacerlo ya; **Medio** = hacerlo pronto; **Bajo** = d
 4. [x] Guardar SheetJS 0.20.3 en el repo en vez de usar cdnjs *(Medio)*
 5. [x] Subir los íconos `icon-192.png` e `icon-512.png`
 6. [x] Crear `README.md` con el formato esperado del Excel
-7. [ ] Vista en tarjetas para celular y búsqueda sin tildes
+7. [x] Vista en tarjetas para celular y búsqueda sin tildes
 8. [ ] (Opcional) Convertir el Excel a JSON al publicar

@@ -86,7 +86,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:var(--text
 .ps-titulo.verde{background:var(--verde-med);}
 .ps-titulo.naranja{background:var(--naranja);}
 .ps-titulo.verde-osc{background:var(--verde-osc);}
-.ps-num{background:rgba(255,255,255,0.25);padding:2px 8px;border-radius:99px;font-size:11px;}
+.ps-num{background:rgba(255,255,255,0.25);padding:2px 8px;border-radius:99px;font-size:11px;white-space:nowrap;flex-shrink:0;}
 .tabla-wrap{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:12px;min-width:500px;}
 thead th{padding:9px 12px;text-align:left;font-size:11px;font-weight:600;white-space:nowrap;color:white;}
@@ -118,6 +118,20 @@ td{padding:8px 12px;border-bottom:1px solid #eaeff5;vertical-align:top;line-heig
   .glosario-grid{grid-template-columns:1fr;}
   .tab{padding:8px 12px;font-size:12px;}
   .toast{white-space:normal;text-align:center;}
+  /* Glosario: solo 2 columnas, cabe sin desplazarse de lado */
+  .glosario-tabla table{min-width:0;}
+  /* Vista en tarjetas: cada fila es una tarjeta y cada columna un renglón «Título: valor» */
+  .tabla-cards{min-width:0;}
+  .tabla-cards thead{display:none;}
+  .tabla-cards,.tabla-cards tbody,.tabla-cards tr,.tabla-cards td{display:block;width:100%;}
+  .tabla-cards tbody{padding:8px;}
+  .tabla-cards tr{background:white;border:1px solid #dde3ed;border-radius:8px;padding:4px 0;margin-bottom:8px;}
+  .tabla-cards tr:last-child{margin-bottom:0;}
+  .tabla-cards tbody tr:nth-child(even),.tabla-cards tbody tr:hover{background:white;}
+  .tabla-cards td{border-bottom:1px solid #eef2f7;padding:6px 12px;font-size:13px;}
+  .tabla-cards td:last-child{border-bottom:none;}
+  .tabla-cards td:empty{display:none;}
+  .tabla-cards td[data-label]:not([data-label=""])::before{content:attr(data-label);display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--texto-sec);margin-bottom:2px;}
 }
 </style>
 </head>
@@ -469,10 +483,10 @@ function renderTabla() {
         <span class="ps-num">N° ${esc(ps)}</span>
         ${esc(nombre)}
       </div>
-      <div class="tabla-wrap"><table>
+      <div class="tabla-wrap"><table class="tabla-cards">
         <thead><tr>${cols.filter(c=>c!=='N° PS'&&c!=='Nombre PS').map(c=>`<th class="${color}">${esc(c)}</th>`).join('')}</tr></thead>
         <tbody>
-          ${filas.map((d,i)=>`<tr>${cols.filter(c=>c!=='N° PS'&&c!=='Nombre PS').map(c=>`<td>${esc(d[c])}</td>`).join('')}</tr>`).join('')}
+          ${filas.map((d,i)=>`<tr>${cols.filter(c=>c!=='N° PS'&&c!=='Nombre PS').map(c=>`<td data-label="${esc(c)}">${esc(d[c])}</td>`).join('')}</tr>`).join('')}
         </tbody>
       </table></div>
     </div>`;

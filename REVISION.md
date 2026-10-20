@@ -18,6 +18,8 @@ Fecha: 20 de octubre de 2026 · Repositorio: `cmorenoglobal/manual-ges`
 | CSP + referrer | Solo se permiten scripts del propio sitio y de cdnjs; la página solo se conecta a su propio dominio; se bloquean plugins y formularios externos | Segunda barrera: aunque algo malicioso se colara, tendría muy poco margen |
 | Service worker | Rutas relativas y estrategia «red primero» | Con rutas `/index.html` la instalación fallaba en GitHub Pages (el sitio vive en `/manual-ges/`). Ahora la app funciona sin conexión con la última versión vista, y nunca muestra una versión vieja si hay internet |
 | Accesibilidad | Pestañas como botones (usables con teclado), etiquetas asociadas a los filtros, anuncios para lectores de pantalla, aviso que no se sale de la pantalla en celular | Ver sección de mejoras |
+| Íconos | `icon-192.png`, `icon-512.png` y `apple-touch-icon.png` | El manifest los pedía y no existían |
+| `README.md` | Cómo actualizar el manual y formato exacto del Excel | Ver «Mantenimiento de los datos» |
 
 Pruebas realizadas (Chromium, pantalla de celular 390 px, sitio servido en `/manual-ges/` como GitHub Pages): carga automática del Excel, las 5 pestañas, búsqueda, exportación a Excel, intento de XSS (queda como texto y no se ejecuta), registro del service worker y cero errores de consola o de CSP.
 
@@ -89,7 +91,7 @@ Escala: **Alto** = conviene hacerlo ya; **Medio** = hacerlo pronto; **Bajo** = d
 
 ### Errores visibles
 
-1. **Íconos de la app faltantes.** `manifest.json` apunta a `icon-192.png` e `icon-512.png`, que no existen en el repo. Al «Agregar a pantalla de inicio» en Android aparece un ícono genérico o la opción ni se ofrece. Solución: crear dos PNG cuadrados (192×192 y 512×512) con el logo y subirlos con esos nombres.
+1. ✅ **Íconos de la app faltantes** (corregido). `manifest.json` apuntaba a `icon-192.png` e `icon-512.png`, que no existían; al «Agregar a pantalla de inicio» aparecía un ícono genérico. Se agregaron, más `apple-touch-icon.png` para iPhone. Si se quiere usar un logo institucional, basta reemplazar esos PNG con el mismo nombre y tamaño.
 2. **Pestaña vacía sin explicación.** Si una hoja del Excel cambia de nombre, la pestaña muestra «Sin resultados con los filtros aplicados», lo que confunde. Sugerencia: si `leerHoja` no encuentra la hoja, mostrar «No se encontró la hoja "APS 2" en el Excel».
 3. **Limpieza del N° PS.** `.replace('.0','')` quita la *primera* aparición de «.0» en cualquier parte. Hoy funciona porque los N° son enteros, pero un valor como «10.05» quedaría «105». Más seguro: `.replace(/\.0$/, '')`.
 4. **«Actualizado: …»** muestra la hora en que se *abrió* la página, no la fecha en que se actualizó el manual. Sugerencia: mostrar la fecha de modificación del Excel (cabecera `Last-Modified` de la respuesta) o una celda «Versión / fecha» dentro del propio Excel.
@@ -123,7 +125,7 @@ Escala: **Alto** = conviene hacerlo ya; **Medio** = hacerlo pronto; **Bajo** = d
 
 ### Mantenimiento de los datos
 
-- Agregar un **`README.md`** que explique: qué hojas debe tener el Excel (`Glosario`, `APS`, `APS 2`, `Derivaciones`, `Hoja1`), qué columnas son obligatorias (`N° PS`, `Nombre PS`, y las que contengan «estab» y «espec»), y que el Glosario usa las columnas A, B, D y E.
+- ✅ Hecho: **`README.md`** que explica cómo actualizar el manual y qué hojas debe tener el Excel (`Glosario`, `APS`, `APS 2`, `Derivaciones`, `Hoja1`), qué columnas son obligatorias (`N° PS`, `Nombre PS`, y las que contengan «estab» y «espec»), y que el Glosario usa las columnas A, B, D y E.
 - Renombrar «Hoja1» a algo descriptivo (por ejemplo «Complementario») **en el Excel y en el código a la vez**.
 - Agregar en el Excel una celda con **fecha de vigencia / versión** y mostrarla en la página, para que quien consulta sepa si está viendo la última versión.
 - Para ver qué cambió entre versiones, una opción simple es mantener también una copia en CSV (una por hoja); git sí muestra las diferencias de un CSV línea por línea.
@@ -137,7 +139,7 @@ Escala: **Alto** = conviene hacerlo ya; **Medio** = hacerlo pronto; **Bajo** = d
 2. [ ] Revisar y fusionar este PR
 3. [ ] Proteger `main` contra borrado/force-push *(5 min)*
 4. [ ] Guardar SheetJS 0.20.3 en el repo en vez de usar cdnjs *(Medio)*
-5. [ ] Subir los íconos `icon-192.png` e `icon-512.png`
-6. [ ] Crear `README.md` con el formato esperado del Excel
+5. [x] Subir los íconos `icon-192.png` e `icon-512.png`
+6. [x] Crear `README.md` con el formato esperado del Excel
 7. [ ] Vista en tarjetas para celular y búsqueda sin tildes
 8. [ ] (Opcional) Convertir el Excel a JSON al publicar

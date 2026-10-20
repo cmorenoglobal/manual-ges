@@ -257,6 +257,11 @@ function esc(v) {
   return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+// Texto para comparar en la búsqueda: minúsculas y sin tildes ("cancer" encuentra "Cáncer")
+function normalizar(v) {
+  return String(v ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
 function procesarExcel(buffer, nombre) {
   try {
     const wb  = XLSX.read(buffer, {type:'array'});
@@ -375,13 +380,13 @@ function poblarSelect(id, opciones) {
 }
 
 function filtrar() {
-  const q      = document.getElementById('f-buscar').value.trim().toLowerCase();
+  const q      = normalizar(document.getElementById('f-buscar').value.trim());
   const estab  = document.getElementById('f-estab').value;
   const espec  = document.getElementById('f-espec').value;
   const datos  = getDatos();
 
   FILTRADA = datos.filter(d => {
-    const texto = Object.values(d).join(' ').toLowerCase();
+    const texto = normalizar(Object.values(d).join(' '));
     const matchQ     = !q     || texto.includes(q);
     const matchEstab = !estab || Object.values(d).some(v=>v===estab);
     const matchEspec = !espec || Object.values(d).some(v=>v===espec);

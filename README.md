@@ -14,6 +14,7 @@ Todo ocurre en el navegador de quien consulta: no hay servidor, base de datos ni
 | `manual.xlsx` | **Los datos.** Lo único que hay que cambiar para actualizar el manual |
 | `index.html` | La página (diseño y lógica) |
 | `sw.js` | Permite usar la página sin conexión |
+| `vendor/xlsx-0.20.3.full.min.js` | Librería [SheetJS](https://sheetjs.com) que lee y exporta Excel (guardada aquí para no depender de un CDN; licencia en `vendor/xlsx-LICENSE.txt`) |
 | `manifest.json`, `icon-*.png`, `apple-touch-icon.png` | Nombre e íconos al instalarla en el celular |
 | `REVISION.md` | Revisión de seguridad y lista de mejoras pendientes |
 

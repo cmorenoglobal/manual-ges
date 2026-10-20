@@ -7,21 +7,22 @@ Fecha: 20 de octubre de 2026 · Repositorio: `cmorenoglobal/manual-ges`
 - **El sitio es de bajo riesgo.** Es una página estática: no tiene servidor propio, base de datos, contraseñas ni formularios que envíen datos a algún lado. Lo que puede salir mal es acotado.
 - **No encontré datos de pacientes ni claves** en el código, en el Excel ni en el historial de git. El Excel solo contiene reglas de digitación, códigos de prestación y establecimientos. Lo único personal es tu nombre en las propiedades del archivo Excel (autor: «Carlos Moreno»), lo que es normal.
 - **El mayor riesgo real está en tu cuenta de GitHub**, no en el código: quien entre a tu cuenta puede cambiar el manual. Protégela con verificación en dos pasos (2FA).
-- **Ya corregí en esta rama** (cada cambio en su propio commit, probado en un navegador): el escape de datos del Excel (XSS), la verificación de integridad del script externo (SRI), una política de seguridad de contenido (CSP), el service worker que no funcionaba en GitHub Pages y varios temas de accesibilidad.
+- **Ya corregí en esta rama** (cada cambio en su propio commit, probado en un navegador): el escape de datos del Excel (XSS), la actualización de SheetJS a 0.20.3 guardada dentro del repo (sin CDN externo y con verificación de integridad), una política de seguridad de contenido (CSP), el service worker que no funcionaba en GitHub Pages y varios temas de accesibilidad.
 
 ## Qué cambié (ya incluido en esta rama)
 
 | Commit | Qué hace | Por qué |
 |---|---|---|
-| SRI en SheetJS | El navegador verifica que la librería descargada desde cdnjs sea exactamente la esperada | Si el CDN fuera atacado o alterado, el script modificado no se ejecuta |
+| SRI en SheetJS | El navegador verifica que la librería sea exactamente la esperada | Si el archivo fuera alterado, el script modificado no se ejecuta |
+| SheetJS 0.20.3 local | Librería actualizada de 0.18.5 a 0.20.3 y guardada en `vendor/` dentro del repo | Corrige dos fallas conocidas (CVE-2023-30533 y CVE-2024-22363) y el sitio ya no depende de cdnjs |
 | Escape de datos (XSS) | El contenido de las celdas del Excel se muestra como texto, no como HTML | Antes, una celda con `<img src=x onerror=...>` ejecutaba código en el navegador de quien abriera el sitio |
-| CSP + referrer | Solo se permiten scripts del propio sitio y de cdnjs; la página solo se conecta a su propio dominio; se bloquean plugins y formularios externos | Segunda barrera: aunque algo malicioso se colara, tendría muy poco margen |
+| CSP + referrer | Solo se permiten scripts del propio sitio; la página solo se conecta a su propio dominio; se bloquean plugins y formularios externos | Segunda barrera: aunque algo malicioso se colara, tendría muy poco margen |
 | Service worker | Rutas relativas y estrategia «red primero» | Con rutas `/index.html` la instalación fallaba en GitHub Pages (el sitio vive en `/manual-ges/`). Ahora la app funciona sin conexión con la última versión vista, y nunca muestra una versión vieja si hay internet |
 | Accesibilidad | Pestañas como botones (usables con teclado), etiquetas asociadas a los filtros, anuncios para lectores de pantalla, aviso que no se sale de la pantalla en celular | Ver sección de mejoras |
 | Íconos | `icon-192.png`, `icon-512.png` y `apple-touch-icon.png` | El manifest los pedía y no existían |
 | `README.md` | Cómo actualizar el manual y formato exacto del Excel | Ver «Mantenimiento de los datos» |
 
-Pruebas realizadas (Chromium, pantalla de celular 390 px, sitio servido en `/manual-ges/` como GitHub Pages): carga automática del Excel, las 5 pestañas, búsqueda, exportación a Excel, intento de XSS (queda como texto y no se ejecuta), registro del service worker y cero errores de consola o de CSP.
+Pruebas realizadas (Chromium, pantalla de celular 390 px, sitio servido en `/manual-ges/` como GitHub Pages): carga automática del Excel, las 5 pestañas, búsqueda, exportación a Excel (y re-lectura del archivo exportado), carga manual de un Excel, intento de XSS (queda como texto y no se ejecuta), registro del service worker, uso sin conexión, ninguna petición a sitios externos y cero errores de consola o de CSP.
 
 No se borró contenido ni se tocaron datos clínicos: `manual.xlsx` está sin cambios.
 
@@ -40,11 +41,13 @@ Escala: **Alto** = conviene hacerlo ya; **Medio** = hacerlo pronto; **Bajo** = d
   2. Revisar *Settings → Sessions* y *Applications* y quitar lo que no reconozcas.
   3. Opcional: en el repo, *Settings → Branches → Add rule* para `main` con «Do not allow force pushes» y «Do not allow deletions». Así nadie puede borrar el historial (que es tu respaldo).
 
-### 🟡 Medio — Librería SheetJS 0.18.5 con vulnerabilidades conocidas
+### ✅ Medio — Librería SheetJS 0.18.5 con vulnerabilidades conocidas (**corregido**)
 
 - **Situación:** se usa `xlsx` 0.18.5 (de 2022). Tiene dos fallas publicadas: CVE-2023-30533 (*prototype pollution* al leer un archivo manipulado; corregida en 0.19.3) y CVE-2024-22363 (*ReDoS*, un archivo especialmente armado puede congelar la pestaña; corregida en 0.20.2). Las versiones nuevas ya no están en npm ni en cdnjs, solo en `cdn.sheetjs.com`.
 - **Cómo se explotaría:** solo leyendo un Excel malicioso. En este sitio el Excel viene de tu propio repositorio, o lo elige el usuario a mano si falla la carga. El impacto realista es bajo (congelar o alterar la página de quien abre ese archivo), por eso es Medio y no Alto.
-- **Cómo arreglarlo:** descargar `xlsx.full.min.js` versión 0.20.3 desde <https://cdn.sheetjs.com/>, guardarlo en el repositorio (por ejemplo `vendor/xlsx.full.min.js`) y cambiar la línea `<script src=...>` a ese archivo local. Además elimina la dependencia de un CDN externo (si cdnjs cae, el sitio sigue funcionando). Si se hace, se puede quitar `https://cdnjs.cloudflare.com` de la CSP. No lo hice yo porque desde este entorno no pude descargar la versión nueva de forma verificable.
+- **Qué se hizo:** se actualizó a la 0.20.3 y se guardó en el repositorio como `vendor/xlsx-0.20.3.full.min.js`, junto a su licencia Apache 2.0 (`vendor/xlsx-LICENSE.txt`). Se quitó cdnjs de la CSP: ahora la página solo ejecuta scripts de su propio dominio.
+- **De dónde salió el archivo:** los servidores oficiales de SheetJS (`cdn.sheetjs.com`, `git.sheetjs.com`) estaban bloqueados desde el entorno de revisión, y su espejo en GitHub se quedó en la 0.18.5. Se tomó de dos re-publicaciones independientes en npm (`@e965/xlsx` y `xlsx-republish`, de autores distintos): el archivo es **idéntico byte a byte** en ambas (SHA-256 `cc015130aa8521e7f088f88898eba949ccdcbfb38df0bd129b44b7273c3a6f41`), y `@e965/xlsx` trae un certificado de procedencia de npm (SLSA) que indica que se armó automáticamente desde el paquete oficial. Si quieres una verificación extra, descarga <https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js> en tu computador y compara su SHA-256 con el de arriba (en Windows: `certutil -hashfile archivo SHA256`).
+- **Para futuras actualizaciones:** reemplazar el archivo en `vendor/`, cambiar el nombre y el `integrity` en `index.html` y el nombre en `sw.js`.
 
 ### 🟡 Medio — Sin respaldo ni control de cambios del Excel
 
@@ -59,7 +62,7 @@ Escala: **Alto** = conviene hacerlo ya; **Medio** = hacerlo pronto; **Bajo** = d
 
 ### 🟢 Bajo — Script externo sin verificación de integridad (**corregido**)
 
-- La versión ya estaba fija (0.18.5), pero sin `integrity`. Ahora tiene SRI: si cdnjs sirviera otro archivo, el navegador lo bloquea (y el sitio mostraría el aviso de error en vez de ejecutar código ajeno).
+- La versión ya estaba fija (0.18.5), pero sin `integrity`. Primero se agregó SRI al script de cdnjs; luego la librería pasó a guardarse en el propio repo (ver punto anterior) y conserva su `integrity` como control adicional.
 
 ### 🟢 Bajo — Sin Content-Security-Policy (**corregido parcialmente**)
 
@@ -68,8 +71,8 @@ Escala: **Alto** = conviene hacerlo ya; **Medio** = hacerlo pronto; **Bajo** = d
 
 ### 🟢 Bajo — Disponibilidad / que «lo boten»
 
-- **GitHub Pages** es muy estable y absorbe ataques de tráfico (DDoS) por sí mismo; un sitio estático como este es muy difícil de botar. Límites: 100 GB de transferencia al mes y 1 GB de tamaño (el sitio pesa ~50 KB + ~900 KB de la librería); no hay riesgo práctico de alcanzarlos.
-- **Dependencias externas:** si cdnjs no responde, el Excel no se puede leer y la página muestra «No se pudo cargar». Se elimina guardando la librería en el repo (ver punto de SheetJS).
+- **GitHub Pages** es muy estable y absorbe ataques de tráfico (DDoS) por sí mismo; un sitio estático como este es muy difícil de botar. Límites: 100 GB de transferencia al mes y 1 GB de tamaño (el sitio pesa ~1 MB en total, casi todo la librería); no hay riesgo práctico de alcanzarlos.
+- **Dependencias externas:** ✅ ya no hay. Antes, si cdnjs no respondía, el Excel no se podía leer. Ahora todo se sirve desde GitHub Pages.
 - **Abuso del hosting:** no hay formularios, subida de archivos al servidor ni endpoints; nadie puede usar tu sitio para alojar contenido propio.
 - **Riesgo de baja por GitHub:** solo si la cuenta se suspende. Conviene tener un respaldo del repo (por ejemplo, descargar el ZIP de vez en cuando o un *fork* en una cuenta institucional).
 
@@ -114,7 +117,7 @@ Escala: **Alto** = conviene hacerlo ya; **Medio** = hacerlo pronto; **Bajo** = d
 
 ### Rendimiento
 
-- La librería SheetJS pesa ~900 KB y se descarga en cada visita (salvo caché del navegador). Para un manual de ~250 filas es mucho. Alternativa de más impacto: convertir `manual.xlsx` a un `manual.json` al publicar (con un pequeño script o una GitHub Action) y que la página lea el JSON; la librería solo se cargaría al pulsar «Exportar Excel». La carga pasaría de ~1 MB a ~50 KB.
+- La librería SheetJS pesa ~950 KB. Se descarga en la primera visita; después la guardan el navegador y el service worker. Para un manual de ~250 filas es mucho. Alternativa de más impacto: convertir `manual.xlsx` a un `manual.json` al publicar (con un pequeño script o una GitHub Action) y que la página lea el JSON; la librería solo se cargaría al pulsar «Exportar Excel». La carga pasaría de ~1 MB a ~50 KB.
 - `manual.xlsx?v=Date.now()` evita la caché en cada visita. Está bien para tener siempre la última versión; con el service worker nuevo, además, funciona sin conexión.
 
 ### Estructura del código
@@ -138,7 +141,7 @@ Escala: **Alto** = conviene hacerlo ya; **Medio** = hacerlo pronto; **Bajo** = d
 1. [ ] Activar 2FA en GitHub *(Alto, 10 min)*
 2. [ ] Revisar y fusionar este PR
 3. [ ] Proteger `main` contra borrado/force-push *(5 min)*
-4. [ ] Guardar SheetJS 0.20.3 en el repo en vez de usar cdnjs *(Medio)*
+4. [x] Guardar SheetJS 0.20.3 en el repo en vez de usar cdnjs *(Medio)*
 5. [x] Subir los íconos `icon-192.png` e `icon-512.png`
 6. [x] Crear `README.md` con el formato esperado del Excel
 7. [ ] Vista en tarjetas para celular y búsqueda sin tildes
